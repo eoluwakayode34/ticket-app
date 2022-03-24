@@ -9,10 +9,15 @@ function App() {
   const [eventData, setEventData] = useState([])
   const [filteredEvent, setFilteredEvent] = useState([])
   const [featureData, setFeaturedData] = useState([])
+  const [checkInternet, setCheckInternet] = useState(true)
+
     useEffect(() => {
       setLoading(true)
         axios.get("https://rest.bandsintown.com/artists/john%20legend/events?app_id=0ab49580-c84f-44d4-875f-d83760ea2cfe")
-        .then(res => res.data)
+      
+        .then(res => {
+          setCheckInternet(res.status >= 200 && res.status < 300)
+          return res.data})
         .then(res =>{ 
           setLoading(false)
           console.log(res)
@@ -25,7 +30,7 @@ function App() {
           data.push(res[1])
           setFeaturedData(data)
 
-        })
+        }).catch(() => setCheckInternet(false) )
 
     }, [])
 
@@ -79,7 +84,8 @@ function App() {
         </Flex>
       </Container>
       <Container>
-        {loading && <Spinner/>}
+        {checkInternet && loading && <Spinner/>}
+        {!checkInternet && <Heading color={"red"}>Check your network connection</Heading>}
         { filteredEvent &&   <Flex justifyContent='space-between' flexWrap={'wrap'}>
            {
              filteredEvent.map((event, index) => <Card key={index} name={event.venue.name} city={event.venue.city} /> )
